@@ -1,31 +1,40 @@
-import React from "react";
+import React, { useState } from "react";
 
 import JokeList from "./components/JokeList";
 import "./App.css";
 
 function App() {
-  const dummyJokes = [
-    {
-      id: 1,
-      type: "general",
-      setup: "What do you call a bee that lives in America?",
-      punchline: "A USB.",
-    },
-    {
-      id: 2,
-      type: "programming",
-      setup: "What's the best thing about a Boolean?",
-      punchline: "Even if you're wrong, you're only off by a bit.",
-    },
-  ];
+
+  const [jokes,setJokes] = useState([]);
+  const [isLoading,setIsLoading] = useState(false);
+
+  function fetchJokersHandler() {
+    fetch('https://official-joke-api.appspot.com/random_ten')
+    .then(res => res.json())
+    .then(data => {
+      setJokes(data);
+    });  
+  }
+
+  async function fetchJAsyncJokersHandle() {
+    setIsLoading(true);
+    const res = await fetch('https://official-joke-api.appspot.com/random_ten');
+    const data = await res.json();
+    // console.log(data );
+    setJokes(data);
+    setIsLoading(false);
+  }
 
   return (
     <React.Fragment>
       <section>
-        <button>Fetch Jokes</button>
+      <button onClick={fetchJokersHandler}>Fetch Jokes</button>
+      <button onClick={fetchJAsyncJokersHandle}>Fetch Jokes (async)</button>
       </section>
       <section>
-        <JokeList jokes={dummyJokes} />
+      {!isLoading && jokes.length >0  &&<JokeList jokes={jokes} />}
+      {!isLoading && jokes.length === 0 && <h2>None jokes</h2>}
+      {isLoading && <h1>Loading...</h1> }
       </section>
     </React.Fragment>
   );

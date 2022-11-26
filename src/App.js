@@ -1,41 +1,67 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-import JokeList from "./components/JokeList";
-import "./App.css";
+import JokeList from './components/JokeList';
+import './App.css';
+import { useEffect } from 'react';
+import { useCallback } from 'react';
 
 function App() {
+  const [jokes, setJokes] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [jokes,setJokes] = useState([]);
-  const [isLoading,setIsLoading] = useState(false);
+  // function fetchJokersHandler() {
+  //   fetch('https://official-joke-api.appspot.com/random_ten')
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       setJokes(data);
+  //     });
+  // }
 
-  function fetchJokersHandler() {
-    fetch('https://official-joke-api.appspot.com/random_ten')
-    .then(res => res.json())
-    .then(data => {
-      setJokes(data);
-    });  
-  }
-
-  async function fetchJAsyncJokersHandle() {
+  const fetchJAsyncJokersHandle = useCallback(async () => {
     setIsLoading(true);
-    const res = await fetch('https://official-joke-api.appspot.com/random_ten');
-    const data = await res.json();
-    // console.log(data );
-    setJokes(data);
-    setIsLoading(false);
+    setError(null);
+    try {
+      const res = await fetch(
+        'https://official-joke-api.appspot.com/random_ten'
+      );
+      if (!res.ok) {
+        throw new Error('Something wrong!');
+      }
+      const data = await res.json();
+      // console.log(data );
+      setJokes(data);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchJAsyncJokersHandle();
+  }, [fetchJAsyncJokersHandle]);
+
+  let content = '';
+  if (isLoading) {
+    content = <h1>Loading...</h1>;
+  } else if (error) {
+    content = <h2>ERROR {error}</h2>;
+  } else {
+    if (jokes.length > 0) {
+      content = <JokeList jokes={jokes} />;
+    } else {
+      content = <p>None jokes</p>;
+    }
   }
 
   return (
     <React.Fragment>
       <section>
-      <button onClick={fetchJokersHandler}>Fetch Jokes</button>
-      <button onClick={fetchJAsyncJokersHandle}>Fetch Jokes (async)</button>
+        {/* <button onClick={fetchJokersHandler}>Fetch Jokes</button> */}
+        <button onClick={fetchJAsyncJokersHandle}>Fetch Jokes (async)</button>
       </section>
-      <section>
-      {!isLoading && jokes.length >0  &&<JokeList jokes={jokes} />}
-      {!isLoading && jokes.length === 0 && <h2>None jokes</h2>}
-      {isLoading && <h1>Loading...</h1> }
-      </section>
+      <section>{content}</section>
     </React.Fragment>
   );
 }

@@ -4,6 +4,7 @@ import JokeList from './components/JokeList';
 import './App.css';
 import { useEffect } from 'react';
 import { useCallback } from 'react';
+import AddJoke from './components/AddJoke';
 
 function App() {
   const [jokes, setJokes] = useState([]);
@@ -42,6 +43,27 @@ function App() {
     fetchJAsyncJokersHandle();
   }, [fetchJAsyncJokersHandle]);
 
+  const onAddJokeHandler = async (joke) => {
+    // console.log(joke);
+    // https://modernreacthttprequest-default-rtdb.firebaseio.com/
+
+    // https://www.udemy.com/course/react-np/learn/lecture/30764906#reviews
+    // 163. Отправка Запроса POST
+
+    const res = await fetch(
+      'https://modernreacthttprequest-default-rtdb.firebaseio.com/jokes.json',
+      {
+        method: 'POST',
+        body: JSON.stringify(joke),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    const data = await res.json();
+    console.log(data);
+  };
+
   let content = '';
   if (isLoading) {
     content = <h1>Loading...</h1>;
@@ -57,6 +79,9 @@ function App() {
 
   return (
     <React.Fragment>
+      <section>
+        <AddJoke onAddJoke={onAddJokeHandler} />
+      </section>
       <section>
         {/* <button onClick={fetchJokersHandler}>Fetch Jokes</button> */}
         <button onClick={fetchJAsyncJokersHandle}>Fetch Jokes (async)</button>
